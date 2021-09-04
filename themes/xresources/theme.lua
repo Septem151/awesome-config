@@ -9,6 +9,7 @@ local xresources = require("beautiful.xresources")
 local dpi = xresources.apply_dpi
 local xrdb = xresources.get_current_theme()
 local gfs = require("gears.filesystem")
+local gears = require("gears")
 local themes_path = gfs.get_themes_dir()
 
 -- inherit default theme
@@ -34,9 +35,12 @@ theme.border_normal = xrdb.color0
 theme.border_focus  = theme.bg_focus
 theme.border_marked = xrdb.color10
 
-theme.tasklist_font_focus               = "mono bold 8"
 theme.tasklist_font                     = "mono 8"
-theme.tasklist_shape_border_width_focus = 2
+theme.tasklist_shape_border_color       = xrdb.color7
+theme.tasklist_shape_border_width       = dpi(1)
+theme.tasklist_spacing                  = dpi(6)
+theme.tasklist_font_focus               = "mono bold 8"
+theme.tasklist_shape_border_width_focus = dpi(1)
 theme.tasklist_shape_border_color_focus = xrdb.color3
 
 theme.tooltip_fg = theme.fg_normal
@@ -44,7 +48,16 @@ theme.tooltip_bg = theme.bg_normal
 
 theme.menu_submenu_icon = themes_path .. "default/submenu.png"
 theme.menu_height = dpi(16)
-theme.menu_width  = dpi(130)
+theme.menu_width  = dpi(160)
+
+theme.notification_icon_size = dpi(64)
+theme.notification_max_width = dpi(420)
+theme.notification_max_height = dpi(180)
+theme.notification_opacity = 0.9
+theme.notification_shape = function (cr, width, height)
+    gears.shape.rounded_rect(cr, width, height, dpi(4))
+end
+
 
 -- Recolor Layout icons:
 theme = theme_assets.recolor_layout(theme, theme.bg_focus)

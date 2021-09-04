@@ -67,10 +67,38 @@ local theme_path = (
 )
 beautiful.init(theme_path)
 
+-- Custom functions
+
+local rounded_shape = function (cr, width, height)
+    gears.shape.rounded_rect(cr, width, height, 4)
+end
+
+local launch_rofi = function()
+    awful.spawn(
+        "rofi -modi drun -show-icons -lines 20 -scroll-method 1 "
+        .. "-display-drun \"Open\" -show drun"
+    )
+end
+
+local confirm_quit = function()
+    awful.spawn.easy_async(
+        "yad --center --on-top --fixed --close-on-unfocus "..
+        "--button-align=center --window-icon=computer "..
+        "--title='Quit Awesome' --image=dialog-question-symbolic "..
+        "--text-align=center --text='Are you sure you want to log out?' "..
+        "--button='No!gtk-cancel:1' --button='Yes!gtk-apply:0'",
+        function(_, _, _, exit_code)
+            if exit_code == 0 then
+                awesome.quit()
+            end
+        end
+    )
+end
+
 -- This is used later as the default terminal and editor to run.
 local terminal = "alacritty"
-local editor = os.getenv("EDITOR") or "vim"
-local editor_cmd = terminal .. " -e " .. editor
+-- local editor = os.getenv("EDITOR") or "vim"
+local editor = "code"
 
 -- Default modkey.
 local modkey = "Mod4"
@@ -107,12 +135,8 @@ local myawesomemenu = {
         end
     },
     {
-        "manual",
-        terminal .. " -e man awesome"
-    },
-    {
         "edit config",
-        editor_cmd .. " " .. awesome.conffile
+	    editor .. " " .. gears.filesystem.get_dir("config")
     },
     {
         "restart",
@@ -120,9 +144,7 @@ local myawesomemenu = {
     },
     {
         "quit",
-        function()
-            awesome.quit()
-        end
+        confirm_quit
     },
 }
 
@@ -133,6 +155,28 @@ local mymainmenu = awful.menu({
             myawesomemenu,
             beautiful.awesome_icon
         },
+        {
+            "open file manager",
+            "pcmanfm"
+        },
+	    {
+            "open launcher",
+            function()
+                -- For some reason, the click is registered at the exact same time
+                -- that Rofi is launched, so we need to wait for click to be released
+                -- before launching Rofi
+                gears.timer.start_new(
+                    0.05,
+                    function()
+                        if mouse.coords().buttons[1] then
+                            return true
+                        end
+                        launch_rofi()
+                        return false
+                    end
+                )
+            end
+	    },
         {
             "open terminal",
             terminal
@@ -270,10 +314,6 @@ awful.screen.connect_for_each_screen(function(s)
         buttons = taglist_buttons
     }
 
-    local rounded_shape = function (cr, width, height)
-        gears.shape.rounded_rect(cr, width, height, 3)
-    end
-
     -- Create a tasklist widget
     s.mytasklist = wibox.widget {
         layout = wibox.container.margin,
@@ -371,15 +411,24 @@ local globalkeys = gears.table.join(
     awful.key(
         { modkey, "Control" },
         "q",
-        awesome.quit,
+        confirm_quit,
         {
             description = "quit awesome",
             group = "0. awesome"
         }
     ),
     awful.key(
-        { modkey },
+        { modkey, "Control" },
         "Escape",
+        awesome.quit,
+        {
+            description = "force quit awesome",
+            group = "0. awesome"
+        }
+    ),
+    awful.key(
+        { modkey, "Shift" },
+        "/",
         hotkeys_popup.show_help,
         {
             description="show help",
@@ -426,7 +475,7 @@ local globalkeys = gears.table.join(
         { },
         "XF86AudioMute",
         function()
-            awful.spawn("amixer -q -D pulse set Master toggle")
+            awful.spawn()
         end,
         {
             description="toggle volume mute",
@@ -451,7 +500,7 @@ local globalkeys = gears.table.join(
         { modkey },
         "r",
         function()
-            awful.util.spawn("rofi -modi run -lines 20 -scroll-method 1 -show run")
+            awful.spawn("rofi -modi run -lines 20 -scroll-method 1 -show run")
         end,
         {
             description = "run prompt",
@@ -460,16 +509,33 @@ local globalkeys = gears.table.join(
     ),
     awful.key(
         { modkey }, "o",
-        function()
-            awful.util.spawn(
-                "rofi -modi drun -show-icons -lines 20 -scroll-method 1 "
-                .. "-display-drun \"Open\" -show drun"
-            )
-        end,
+        launch_rofi,
         {
             description = "run app",
             group = "2. launcher"
         }
+    ),
+    awful.key(
+	{ },
+	"Print",
+	function()
+	    awful.spawn.with_shell("flameshot full -p ~/Pictures")
+	end,
+	{
+	    description = "capture entire screen",
+	    group = "2. launcher"
+	}
+    ),
+    awful.key(
+	{ modkey },
+	"Print",
+	function()
+	    awful.spawn.with_shell("flameshot launcher")
+	end,
+	{
+	    description = "run screenshot utility",
+	    group = "2. launcher"
+	}
     ),
     -- #endregion
 
@@ -758,6 +824,17 @@ local clientkeys = gears.table.join(
     ),
     awful.key(
         { modkey },
+        "y",
+        function(c)
+            c.sticky = not c.sticky
+        end,
+        {
+            description = "toggle sticky",
+            group = "5. client"
+        }
+    ),
+    awful.key(
+        { modkey },
         "n",
         function(c)
             c.minimized = true
@@ -892,12 +969,14 @@ awful.rules.rules = {
             instance = {
                 "DTA",  -- Firefox addon DownThemAll.
                 "copyq",  -- Includes session name in class.
-                "pinentry",
+                "eog",
+                "discord",
+                "vlc",
+                "nitrogen",
             },
             class = {
                 "Arandr",
                 "Blueman-manager",
-                "Gpick",
                 "Kruler",
                 "MessageWin",  -- kalarm.
                 "Sxiv",
@@ -905,22 +984,9 @@ awful.rules.rules = {
                 "Wpa_gui",
                 "veromix",
                 "xtightvncviewer",
-                "nitrogen",
                 "NordPass",
-                "discord",
-                "flameshot",
-                "net-runelite-client-RuneLite",
                 "net-runelite-launcher-Launcher",
-                "Pcmanfm",
-                "Eog",
-                "vlc",
-                "Nvidia-settings",
-                "Galculator",
-                "Gimp-2.10",
-                "libreoffice-startcenter",
-                "File-roller",
-                "Timeshift-gtk",
-                "Org.gnome.DejaDup",
+                "net-runelite-client-RuneLite",
             },
             -- Note that the name property shown in xprop might be set slightly after creation of the client
             -- and the name shown there might not match defined rules here.
@@ -934,6 +1000,31 @@ awful.rules.rules = {
             }
         },
         properties = { floating = true }
+    },
+
+    -- Floating clients that need to be centered
+    {
+        rule_any = {
+            instance = {
+                "pcmanfm",
+                "gpick",
+                "flameshot",
+                "nvidia-settings",
+                "galculator",
+                "gimp",
+                "timeshift",
+                "deja-dup",
+                "pavucontrol",
+                "xscreensaver-settings",
+                "yad",
+                "file-roller",
+            },
+            class = {
+                "libreoffice-startcenter",
+                "Gcr-prompter",
+            },
+        },
+        properties = { floating = true, placement = awful.placement.centered },
     },
 
     -- Add titlebars to normal clients and dialogs
@@ -965,6 +1056,7 @@ client.connect_signal(
             and c.title == nil then
                 c.floating = not c.floating
         end
+        -- c.shape = rounded_shape
     end
 )
 
