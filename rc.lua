@@ -1014,7 +1014,7 @@ awful.rules.rules = {
                 "galculator",
                 "gimp",
                 "timeshift",
-                "deja-dup",
+                "org.gnome.DejaDup",
                 "pavucontrol",
                 "xscreensaver-settings",
                 "yad",
