@@ -973,6 +973,7 @@ awful.rules.rules = {
                 "discord",
                 "vlc",
                 "nitrogen",
+                "obs",
             },
             class = {
                 "Arandr",
