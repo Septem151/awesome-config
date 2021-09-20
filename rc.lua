@@ -80,19 +80,22 @@ local launch_rofi = function()
     )
 end
 
-local confirm_quit = function()
-    awful.spawn.easy_async(
-        "yad --center --on-top --fixed --close-on-unfocus "..
-        "--button-align=center --window-icon=computer "..
-        "--title='Quit Awesome' --image=dialog-question-symbolic "..
-        "--text-align=center --text='Are you sure you want to log out?' "..
-        "--button='No!gtk-cancel:1' --button='Yes!gtk-apply:0'",
-        function(_, _, _, exit_code)
-            if exit_code == 0 then
-                awesome.quit()
+local confirm = function(title, icon, image, text, func)
+    local f = function()
+        awful.spawn.easy_async(
+            "yad --center --on-top --fixed --close-on-unfocus "..
+            "--button-align=center --window-icon="..icon.." "..
+            "--title='"..title.."' --image="..image.." "..
+            "--text-align=center --text='"..text.."' "..
+            "--button='No!dialog-no:1' --button='Yes!dialog-yes:0'",
+            function(_, _, _, exit_code)
+                if exit_code == 0 then
+                    func()
+                end
             end
-        end
-    )
+        )
+    end
+    return f
 end
 
 -- This is used later as the default terminal and editor to run.
@@ -127,60 +130,117 @@ awful.layout.layouts = {
 -- #region Menu
 
 -- #region Launcher widget and main menu
-local myawesomemenu = {
+
+local mysystemmenu = {
     {
-        "hotkeys",
-        function()
-            hotkeys_popup.show_help(nil, awful.screen.focused())
-        end
-    },
-    {
-        "edit config",
-	    editor .. " " .. gears.filesystem.get_dir("config")
+        "logout",
+        confirm(
+            "Log Out",
+            "system-log-out",
+            "system-log-out-symbolic",
+            "Are you sure you want to log out?",
+            function()
+                awesome.quit()
+            end
+        ),
+        -- "/usr/share/icons/Papirus-Dark/16x16/panel/dialog-password-panel.svg"
+        "/usr/share/icons/Papirus/16x16/apps/system-log-out.svg"
     },
     {
         "restart",
-        awesome.restart
+        confirm(
+            "Restart",
+            "system-restart",
+            "system-restart-symbolic",
+            "Are you sure you want to restart?",
+            function()
+                awful.spawn("reboot")
+            end
+        ),
+        "/usr/share/icons/Papirus/16x16/apps/system-restart.svg"
     },
     {
-        "quit",
-        confirm_quit
+        "shutdown",
+        confirm(
+            "Restart",
+            "system-shutdown",
+            "system-shutdown-symbolic",
+            "Are you sure you want to shutdown?",
+            function()
+                awful.spawn("shutdown now")
+            end
+        ),
+        "/usr/share/icons/Papirus/16x16/apps/system-shutdown.svg"
     },
+}
+
+local myappmenu = {
+    {
+        "file browser",
+        "pcmanfm",
+        "/usr/share/icons/Papirus/16x16/places/folder-blue.svg"
+    },
+    {
+        "web browser",
+        "brave",
+        "/usr/share/icons/Papirus/16x16/apps/brave.svg"
+    },
+    {
+        "app launcher",
+        function()
+            -- For some reason, the click is registered at the exact same time
+            -- that Rofi is launched, so we need to wait for click to be released
+            -- before launching Rofi
+            gears.timer.start_new(
+                0.05,
+                function()
+                    if mouse.coords().buttons[1] then
+                        return true
+                    end
+                    launch_rofi()
+                    return false
+                end
+            )
+        end,
+        "/usr/share/icons/Papirus/16x16/apps/app-launcher.svg"
+    },
+    {
+        "terminal",
+        terminal,
+        "/usr/share/icons/Papirus/16x16/apps/com.alacritty.Alacritty.svg"
+    }
 }
 
 local mymainmenu = awful.menu({
     items = {
         {
-            "awesome",
-            myawesomemenu,
-            beautiful.awesome_icon
+            "applications",
+            myappmenu,
+            -- "/usr/share/icons/Papirus-Dark/16x16/actions/document-open.svg"
+            "/usr/share/icons/Papirus/16x16/apps/applications-all.svg"
         },
         {
-            "open file manager",
-            "pcmanfm"
+            "system",
+            mysystemmenu,
+            "/usr/share/icons/Papirus/16x16/apps/systemsettings.svg"
         },
-	    {
-            "open launcher",
+        {
+            "hotkeys",
             function()
-                -- For some reason, the click is registered at the exact same time
-                -- that Rofi is launched, so we need to wait for click to be released
-                -- before launching Rofi
-                gears.timer.start_new(
-                    0.05,
-                    function()
-                        if mouse.coords().buttons[1] then
-                            return true
-                        end
-                        launch_rofi()
-                        return false
-                    end
-                )
-            end
-	    },
+                hotkeys_popup.show_help(nil, awful.screen.focused())
+            end,
+            "/usr/share/icons/Papirus/16x16/apps/preferences-desktop-keyboard-shortcuts.svg"
+        },
         {
-            "open terminal",
-            terminal
-        }
+            "edit config",
+            editor .. " " .. gears.filesystem.get_dir("config"),
+            "/usr/share/icons/Papirus/16x16/mimetypes/text-x-lua.svg"
+        },
+        {
+            "reload",
+            awesome.restart,
+            "/usr/share/icons/Papirus/16x16/apps/system-restart.svg"
+        },
     }
 })
 
@@ -278,7 +338,7 @@ awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
     set_wallpaper(s)
 
-    beautiful.systray_icon_spacing = 4
+    beautiful.systray_icon_spacing = 8
 
     -- Each screen has its own tag table.
     awful.tag(
@@ -411,7 +471,15 @@ local globalkeys = gears.table.join(
     awful.key(
         { modkey, "Control" },
         "q",
-        confirm_quit,
+        confirm(
+            "Log Out",
+            "system-log-out",
+            "system-log-out-symbolic",
+            "Are you sure you want to log out?",
+            function()
+                awesome.quit()
+            end
+        ),
         {
             description = "quit awesome",
             group = "0. awesome"
@@ -516,10 +584,20 @@ local globalkeys = gears.table.join(
         }
     ),
     awful.key(
+        { modkey }, "space",
+        function()
+            mymainmenu:show({coords={x=0, y=0}})
+        end,
+        {
+            description = "open menu",
+            group = "2. launcher"
+        }
+    ),
+    awful.key(
 	{ },
 	"Print",
 	function()
-	    awful.spawn.with_shell("flameshot full -p ~/Pictures")
+	    awful.spawn.with_shell("flameshot screen -p ~/Pictures")
 	end,
 	{
 	    description = "capture entire screen",
@@ -530,7 +608,7 @@ local globalkeys = gears.table.join(
 	{ modkey },
 	"Print",
 	function()
-	    awful.spawn.with_shell("flameshot launcher")
+	    awful.spawn.with_shell("flameshot gui")
 	end,
 	{
 	    description = "run screenshot utility",
@@ -668,28 +746,6 @@ local globalkeys = gears.table.join(
         end,
         {
             description = "decrease the number of columns",
-            group = "4. layout"
-        }
-    ),
-    awful.key(
-        { modkey },
-        "space",
-        function()
-            awful.layout.inc(1)
-        end,
-        {
-            description = "select next layout",
-            group = "4. layout"
-        }
-    ),
-    awful.key(
-        { modkey, "Shift" },
-        "space",
-        function()
-            awful.layout.inc(-1)
-        end,
-        {
-            description = "select previous layout",
             group = "4. layout"
         }
     ),
@@ -969,7 +1025,6 @@ awful.rules.rules = {
             instance = {
                 "DTA",  -- Firefox addon DownThemAll.
                 "copyq",  -- Includes session name in class.
-                "eog",
                 "discord",
                 "vlc",
                 "nitrogen",
@@ -988,6 +1043,8 @@ awful.rules.rules = {
                 "NordPass",
                 "net-runelite-launcher-Launcher",
                 "net-runelite-client-RuneLite",
+                "Steam",
+                "steam_app_253230",  -- Hat In Time
             },
             -- Note that the name property shown in xprop might be set slightly after creation of the client
             -- and the name shown there might not match defined rules here.
@@ -1019,18 +1076,23 @@ awful.rules.rules = {
                 "xscreensaver-settings",
                 "yad",
                 "file-roller",
+                "eog",
             },
             class = {
                 "libreoffice-startcenter",
                 "Gcr-prompter",
+                "ftb-app",
             },
         },
         properties = { floating = true, placement = awful.placement.centered },
     },
 
     -- Add titlebars to normal clients and dialogs
-    -- { rule_any = {type = { "normal", "dialog" }
-    --   }, properties = { titlebars_enabled = true }
+    -- {
+    --     rule_any = {
+    --         class = { "Minecraft 1.7.10" }
+    --     },
+    --     properties = { titlebars_enabled = true }
     -- },
 }
 -- #endregion

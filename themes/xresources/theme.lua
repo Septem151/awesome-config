@@ -38,7 +38,7 @@ theme.border_marked = xrdb.color10
 theme.tasklist_font                     = "mono 8"
 theme.tasklist_shape_border_color       = xrdb.color7
 theme.tasklist_shape_border_width       = dpi(1)
-theme.tasklist_spacing                  = dpi(6)
+theme.tasklist_spacing                  = dpi(4)
 theme.tasklist_font_focus               = "mono bold 8"
 theme.tasklist_shape_border_width_focus = dpi(1)
 theme.tasklist_shape_border_color_focus = xrdb.color3
@@ -50,7 +50,7 @@ theme.menu_submenu_icon = themes_path .. "default/submenu.png"
 theme.menu_height = dpi(16)
 theme.menu_width  = dpi(160)
 
-theme.notification_icon_size = dpi(64)
+theme.notification_icon_size = dpi(32)
 theme.notification_max_width = dpi(420)
 theme.notification_max_height = dpi(180)
 theme.notification_opacity = 0.9
