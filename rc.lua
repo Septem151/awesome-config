@@ -1077,6 +1077,7 @@ awful.rules.rules = {
                 "yad",
                 "file-roller",
                 "eog",
+                "zoom",
             },
             class = {
                 "libreoffice-startcenter",
