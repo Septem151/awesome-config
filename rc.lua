@@ -258,7 +258,7 @@ menubar.utils.terminal = terminal
 -- Create a textclock widget
 local mytextclock = wibox.widget {
     {
-        widget = wibox.widget.textclock("%a %b %d, %l:%M %p")
+        widget = wibox.widget.textclock("%a %b %d %l:%M %p")
     },
     left = 10,
     right = 10,
@@ -1083,6 +1083,7 @@ awful.rules.rules = {
                 "libreoffice-startcenter",
                 "Gcr-prompter",
                 "ftb-app",
+                "Gnome-system-monitor",
             },
         },
         properties = { floating = true, placement = awful.placement.centered },
