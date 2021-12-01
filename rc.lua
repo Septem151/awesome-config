@@ -1218,8 +1218,7 @@ client.connect_signal(
 
 -- #region Autostart Programs
 local startup_progs = {
-    "pkill picom && picom --experimental-backends",
-    "coffee"
+    "coffee",
 }
 
 for _, prog in ipairs(startup_progs)
