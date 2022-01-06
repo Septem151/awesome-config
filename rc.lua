@@ -1098,6 +1098,7 @@ awful.rules.rules = {
                 "Gcr-prompter",
                 "ftb-app",
                 "Gnome-system-monitor",
+                "UnityHub",
             },
         },
         properties = { floating = true, placement = awful.placement.centered },

@@ -29,7 +29,7 @@ theme.fg_focus      = theme.bg_normal
 theme.fg_urgent     = theme.bg_normal
 theme.fg_minimize   = theme.bg_normal
 
-theme.useless_gap   = dpi(4)
+theme.useless_gap   = dpi(3)
 theme.border_width  = dpi(2)
 theme.border_normal = xrdb.color0
 theme.border_focus  = theme.bg_focus
@@ -47,7 +47,7 @@ theme.tooltip_fg = theme.fg_normal
 theme.tooltip_bg = theme.bg_normal
 
 theme.menu_submenu_icon = themes_path .. "default/submenu.png"
-theme.menu_height = dpi(16)
+theme.menu_height = dpi(18)
 theme.menu_width  = dpi(160)
 
 theme.notification_icon_size = dpi(32)
