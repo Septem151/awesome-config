@@ -16,7 +16,7 @@ local themes_path = gfs.get_themes_dir()
 local theme = dofile(themes_path .. "default/theme.lua")
 -- load vector assets' generators for this theme
 
-theme.font          = "mono bold 9"
+theme.font          = "Monospace Bold 9"
 
 theme.bg_normal     = xrdb.background
 theme.bg_focus      = xrdb.color13
@@ -35,11 +35,11 @@ theme.border_normal = xrdb.color0
 theme.border_focus  = theme.bg_focus
 theme.border_marked = xrdb.color10
 
-theme.tasklist_font                     = "mono 8"
+theme.tasklist_font                     = "Monospace 8"
 theme.tasklist_shape_border_color       = xrdb.color7
 theme.tasklist_shape_border_width       = dpi(1)
 theme.tasklist_spacing                  = dpi(4)
-theme.tasklist_font_focus               = "mono bold 8"
+theme.tasklist_font_focus               = "Monospace bold 8"
 theme.tasklist_shape_border_width_focus = dpi(1)
 theme.tasklist_shape_border_color_focus = xrdb.color3
 

@@ -167,7 +167,7 @@ local mysystemmenu = {
             "system-shutdown-symbolic",
             "Are you sure you want to shutdown?",
             function()
-                awful.spawn("shutdown now")
+                awful.spawn("poweroff")
             end
         ),
         "/usr/share/icons/Papirus/16x16/apps/system-shutdown.svg"
@@ -608,6 +608,17 @@ local globalkeys = gears.table.join(
         }
     ),
     awful.key(
+	{ modkey },
+	"Print",
+	function()
+	    awful.spawn.with_shell("flameshot gui")
+	end,
+	{
+	    description = "run screenshot utility",
+	    group = "2. launcher"
+	}
+    ),
+    awful.key(
 	{ },
 	"Print",
 	function()
@@ -619,15 +630,15 @@ local globalkeys = gears.table.join(
 	}
     ),
     awful.key(
-	{ modkey },
-	"Print",
-	function()
-	    awful.spawn.with_shell("flameshot gui")
-	end,
-	{
-	    description = "run screenshot utility",
-	    group = "2. launcher"
-	}
+    { modkey, "Control" },
+    "Print",
+    function()
+        awful.spawn.with_shell("$HOME/.local/bin/wincapture")
+    end,
+    {
+        description = "capture selected window",
+        group = "2. launcher"
+    }
     ),
     -- #endregion
 
