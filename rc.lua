@@ -557,7 +557,7 @@ local globalkeys = gears.table.join(
         { },
         "XF86AudioMute",
         function()
-            awful.spawn()
+            awful.spawn("amixer -q -D pulse set Master toggle")
         end,
         {
             description="toggle volume mute",
